@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>計算フォーム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .button-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .form-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+        .form-container {
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .form-container.active {
+            display: flex;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result1, #result2 {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .formula {
+            font-size: 18px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .formula p {
+            margin: 0;
+        }
+        .result-container {
+            margin-top: 10px;
+        }
+        .history {
+            margin-top: 10px;
+        }
+        .history h3 {
+            margin: 0;
+            margin-bottom: 10px;
+        }
+        .history ul {
+            list-style: none;
+            padding: 0;
+        }
+        .history li {
+            background-color: #f9f9f9;
+            padding: 5px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="button-container">
+            <button onclick="showForm('form1')">計算フォームのみ</button>
+            <button onclick="showForm('form2')">総析出量フォームのみ</button>
+            <button onclick="showForm('both')">両方表示</button>
+        </div>
+        <div class="form-wrapper">
+            <div id="form1" class="form-container">
+                <h1>計算フォーム</h1>
+                <form id="calculationForm1">
+                    <input type="number" id="x" placeholder="Xの値" step="0.0001" required>
+                    <input type="number" id="y" placeholder="Yの値" step="0.0001" required>
+                    <button type="submit">計算</button>
+                </form>
+                <div id="result1" class="result-container"></div>
+                <div class="formula">
+                    <p>計算式:</p>
+                    <p>\[\frac{X \times \left(\frac{1}{20}\right)}{Y}\]</p>
+                </div>
+                <div class="history">
+                    <h3>計算履歴</h3>
+                    <ul id="history1"></ul>
+                </div>
+            </div>
+            <div id="form2" class="form-container">
+                <h1>総析出量フォーム</h1>
+                <form id="calculationForm2">
+                    <input type="number" id="a" placeholder="Aの値" step="0.0001" required>
+                    <input type="number" id="z" placeholder="Zの値" step="0.0001" required>
+                    <button type="submit">計算</button>
+                </form>
+                <div id="result2" class="result-container"></div>
+                <div class="formula">
+                    <p>計算式:</p>
+                    <p>\[\text{総析出量} = \left(\frac{0.95 - Z}{1 - Z}\right) \times A\]</p>
+                </div>
+                <div class="history">
+                    <h3>計算履歴</h3>
+                    <ul id="history2"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showForm(form) {
+            document.getElementById('form1').classList.remove('active');
+            document.getElementById('form2').classList.remove('active');
+            if (form === 'form1') {
+                document.getElementById('form1').classList.add('active');
+            } else if (form === 'form2') {
+                document.getElementById('form2').classList.add('active');
+            } else {
+                document.getElementById('form1').classList.add('active');
+                document.getElementById('form2').classList.add('active');
+            }
+        }
+
+        document.getElementById('calculationForm1').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const x = parseFloat(document.getElementById('x').value);
+            const y = parseFloat(document.getElementById('y').value);
+            const resultDiv = document.getElementById('result1');
+            const historyList = document.getElementById('history1');
+
+            if (isNaN(x) || isNaN(y)) {
+                resultDiv.textContent = 'エラー: 有効な数値を入力してください';
+            } else if (y === 0) {
+                resultDiv.textContent = 'エラー: Yは0以外の数値を入力してください';
+            } else {
+                const z = (x * 0.05) / y;
+                const resultText = `結果: ${z.toFixed(4)}`;
+                resultDiv.textContent = resultText;
+
+                // 履歴に追加
+                const historyItem = document.createElement('li');
+                historyItem.textContent = `X=${x}, Y=${y}, ${resultText}`;
+                historyList.appendChild(historyItem);
+            }
+        });
+
+        document.getElementById('calculationForm2').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const a = parseFloat(document.getElementById('a').value);
+            const z = parseFloat(document.getElementById('z').value);
+            const resultDiv = document.getElementById('result2');
+            const historyList = document.getElementById('history2');
+
+            if (isNaN(a) || isNaN(z)) {
+                resultDiv.textContent = 'エラー: 有効な数値を入力してください';
+            } else if (z === 1) {
+                resultDiv.textContent = 'エラー: Zは1以外の数値を入力してください';
+            } else {
+                const totalPrecipitation = ((0.95 - z) / (1 - z)) * a;
+                const resultText = `結果: ${totalPrecipitation.toFixed(4)}`;
+                resultDiv.textContent = resultText;
+
+                // 履歴に追加
+                const historyItem = document.createElement('li');
+                historyItem.textContent = `A=${a}, Z=${z}, ${resultText}`;
+                historyList.appendChild(historyItem);
+            }
+        });
+
+        // 初期表示
+        showForm('form1');
+    </script>
+</body>
+</html>
